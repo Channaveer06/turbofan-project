@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AERO_CORE | Upload</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<style>
+body {
+    background: radial-gradient(circle at top, #0a0f1c, #020617);
+    color: #e2e8f0;
+    font-family: Inter;
+}
+
+/* Glass */
+.glass {
+    background: rgba(20, 25, 40, 0.75);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+}
+
+/* Upload box */
+.upload-box {
+    border: 2px dashed rgba(255,255,255,0.15);
+    transition: all 0.3s ease;
+}
+.upload-box:hover {
+    border-color: #ffb874;
+    box-shadow: 0 0 25px rgba(255,184,116,0.2);
+}
+
+/* Glow button */
+.btn {
+    background: linear-gradient(135deg, #ffb874, #ff8a00);
+}
+.btn:hover {
+    box-shadow: 0 0 20px rgba(255,184,116,0.4);
+}
+
+/* Fade */
+.fade {
+    animation: fade 0.8s ease;
+}
+@keyframes fade {
+    from {opacity:0; transform:translateY(30px);}
+    to {opacity:1; transform:translateY(0);}
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="fixed top-0 w-full bg-[#0a0f1c]/80 backdrop-blur-xl flex justify-between items-center px-8 h-20 z-50">
+    <h1 class="text-xl text-[#ffb874] font-bold">AERO_CORE</h1>
+    <a href="{% url 'logout' %}" class="text-sm text-gray-400 hover:text-white">Logout</a>
+</header>
+
+<!-- MAIN -->
+<main class="pt-24 h-screen flex">
+
+<!-- LEFT SIDE -->
+<div class="w-1/2 hidden md:block relative">
+
+    <img src="{% static 'images/engine.jpg' %}" 
+         class="absolute inset-0 w-full h-full object-cover">
+
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0a0f1c] via-[#0a0f1c]/80 to-transparent"></div>
+
+    <div class="relative z-10 p-16 max-w-md fade">
+
+        <h1 class="text-5xl font-bold text-[#ffb874]">
+            Engine AI Analysis
+        </h1>
+
+        <p class="mt-6 text-gray-300">
+            Upload aircraft engine telemetry and get real-time predictive maintenance insights.
+        </p>
+
+    </div>
+
+</div>
+
+<!-- RIGHT SIDE -->
+<div class="w-full md:w-1/2 flex items-center justify-center px-6">
+
+<div class="glass p-10 rounded-xl w-full max-w-md space-y-6 fade">
+
+<h2 class="text-2xl font-bold text-center text-[#ffb874]">
+Upload Dataset
+</h2>
+
+<form method="POST" enctype="multipart/form-data" class="space-y-6">
+{% csrf_token %}
+
+<div class="upload-box rounded-lg p-10 text-center">
+
+<span class="material-symbols-outlined text-5xl text-gray-400">
+cloud_upload
+</span>
+
+<p class="mt-4 text-gray-400">
+Select CSV file
+</p>
+
+<input type="file" name="file" class="mt-4"/>
+
+</div>
+
+<button class="w-full btn py-3 rounded font-bold text-black">
+Upload File
+</button>
+
+</form>
+
+<form method="POST">
+{% csrf_token %}
+<input type="hidden" name="demo" value="1"/>
+
+<button class="w-full bg-gray-800 py-3 rounded hover:bg-gray-700 transition">
+Run Demo
+</button>
+</form>
+
+{% if error %}
+<p class="text-red-400 text-center">{{ error }}</p>
+{% endif %}
+
+<!-- INFO -->
+<div class="text-center text-xs text-gray-500 pt-4 tracking-wide">
+LSTM MODEL • 17 SENSORS • CSV INPUT
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+</body>
+</html>

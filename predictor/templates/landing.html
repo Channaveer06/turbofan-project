@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AERO_CORE | Predictive Maintenance</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<style>
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+}
+body {
+    background-color: #0c1324;
+    color: #dce1fb;
+    font-family: 'Inter', sans-serif;
+}
+.glass-panel {
+    background: rgba(46, 52, 71, 0.4);
+    backdrop-filter: blur(20px);
+}
+.aviation-gradient {
+    background: linear-gradient(135deg, #ffb874 0%, #bd6d00 100%);
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="fixed top-0 w-full bg-[#0c1324]/80 backdrop-blur-xl flex justify-between items-center px-8 h-20 z-50">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#ffb874] text-3xl">flight_takeoff</span>
+        <span class="text-2xl font-black text-[#ffb874]">AERO_CORE</span>
+    </div>
+
+    <a href="{% url 'login' %}" class="text-sm text-gray-300 hover:text-white">
+        Login
+    </a>
+</header>
+
+<main class="pt-20">
+
+<!-- HERO -->
+<section class="relative h-[750px] flex items-center justify-center overflow-hidden">
+
+    <!-- Background Image -->
+    <div class="absolute inset-0 z-0">
+        <img src="{% static 'images/plane.jpg' %}" 
+             class="w-full h-full object-cover brightness-[0.3] blur-sm">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0c1324]"></div>
+    </div>
+
+    <!-- Glass Card -->
+    <div class="relative z-10 glass-panel p-12 rounded-lg max-w-4xl text-center shadow-2xl">
+
+        <h1 class="text-5xl md:text-7xl font-bold leading-tight">
+            Aircraft Engine <br/>
+            Predictive <br/>
+            <span class="text-[#ffb874]">Maintenance</span>
+        </h1>
+
+        <p class="mt-6 text-gray-300 text-lg max-w-2xl mx-auto">
+            Predict engine health, prevent failures, and optimize maintenance using advanced AI models.
+            This system uses deep learning to estimate Remaining Useful Life (RUL) of aircraft engines.
+        </p>
+
+        <!-- BUTTONS -->
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+
+            <a href="{% url 'login' %}" 
+               class="aviation-gradient px-8 py-4 rounded font-bold text-black shadow-lg hover:scale-105 transition">
+                GET STARTED
+            </a>
+
+            <a href="{% url 'login' %}" 
+               class="border border-gray-500 px-8 py-4 rounded hover:bg-gray-800 transition">
+                TRY DEMO
+            </a>
+
+        </div>
+    </div>
+
+</section>
+
+<!-- FEATURES -->
+<section class="py-20 px-6 max-w-6xl mx-auto">
+
+<h2 class="text-3xl text-[#ffb874] mb-10 text-center">Key Features</h2>
+
+<div class="grid md:grid-cols-3 gap-6">
+
+<div class="glass-panel p-6 rounded-lg hover:scale-105 transition">
+<h3 class="text-xl mb-2 font-semibold">AI-Based Degradation Prediction</h3>
+<p class="text-gray-300 text-sm">
+The model learns temporal degradation patterns using LSTM networks, making it ideal for predictive maintenance.
+</p>
+</div>
+
+<div class="glass-panel p-6 rounded-lg hover:scale-105 transition">
+<h3 class="text-xl mb-2 font-semibold">Real-time Engine Health</h3>
+<p class="text-gray-300 text-sm">
+Provides real-time health status of engines including temperature, pressure, and performance metrics.
+</p>
+</div>
+
+<div class="glass-panel p-6 rounded-lg hover:scale-105 transition">
+<h3 class="text-xl mb-2 font-semibold">Remaining Useful Life</h3>
+<p class="text-gray-300 text-sm">
+Predicts how long the engine can operate before maintenance is required.
+</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- CTA -->
+<section class="py-20 text-center">
+
+<h2 class="text-3xl text-[#ffb874] mb-4">Get Started</h2>
+
+<p class="text-gray-300 mb-6">
+Upload your engine data and get instant predictions on engine health and remaining life.
+</p>
+
+<a href="{% url 'login' %}" 
+   class="aviation-gradient px-8 py-4 rounded font-bold text-black hover:scale-105 transition">
+    START NOW
+</a>
+
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="text-center py-6 text-gray-500 text-sm">
+Developed using NASA Turbofan Engine Dataset
+</footer>
+
+</body>
+</html>
