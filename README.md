@@ -6,7 +6,7 @@ Django full-stack web app for predicting Remaining Useful Life (RUL) of aircraft
 
 ## 🏗️ Project Structure
 
-```
+
 turbofan_project/
 ├── manage.py
 ├── requirements.txt
