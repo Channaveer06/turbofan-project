@@ -1,62 +1,71 @@
 import json
 import numpy as np
 import pandas as pd
-from django.shortcuts import render, redirect
+import datetime
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import user_passes_test
+from django.core.mail import send_mail
+
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from django.http import HttpResponse
-from django.contrib.auth import authenticate, login
 
+from .models import SignupRequest
 from .model_utils import (
     predict_rul, get_engine_status, get_life_percent, FEATURE_COLS
 )
 
+# 🔥 GLOBAL LOG STORAGE
+logs = []
 
-# 🔹 LANDING PAGE
+
+# 🔹 LANDING
 def landing(request):
     return render(request, 'landing.html')
 
 
-
-
-# 🔹 LOGIN (REAL DJANGO AUTH)
+# 🔹 LOGIN
 def login_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        user = authenticate(
+            request,
+            username=request.POST.get("username"),
+            password=request.POST.get("password")
+        )
 
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)   # 🔥 creates session
+        if user:
+            login(request, user)
             return redirect('upload')
 
-        return render(request, 'login.html', {
-            'error': 'Invalid username or password'
-        })
+        return render(request, 'login.html', {'error': 'Invalid username or password'})
 
     return render(request, 'login.html')
 
-from django.contrib.auth import logout
 
+# 🔹 LOGOUT
 def logout_view(request):
     logout(request)
     return redirect('login')
-# 🔹 UPLOAD VIEW
+
+
+# 🔹 UPLOAD
 def upload_view(request):
     context = {'feature_cols_list': FEATURE_COLS}
 
     if request.method == 'POST':
 
-        # ================= DEMO MODE =================
+        # DEMO MODE
         if request.POST.get('demo') == '1':
             try:
-                # 🔥 Generate realistic random data
-                sample = np.random.rand(40, len(FEATURE_COLS))
-                df = pd.DataFrame(sample, columns=FEATURE_COLS)
+                df = pd.DataFrame(
+                    np.random.rand(40, len(FEATURE_COLS)),
+                    columns=FEATURE_COLS
+                )
 
                 rul, err = predict_rul(df)
                 if err:
@@ -66,77 +75,75 @@ def upload_view(request):
                 status, status_class, recommendation = get_engine_status(rul)
                 life_pct = get_life_percent(rul)
 
-                # 🔥 LAST ROW (LATEST ENGINE STATE)
-                last_row = df.iloc[-1].to_dict()
-
-                # 🔥 DEBUG (optional)
-                print("DEMO SENSOR DATA:", last_row)
-
-                request.session['result'] = {
+                result_data = {
                     'rul': int(rul),
                     'status': status,
                     'status_class': status_class,
                     'recommendation': recommendation,
                     'life_pct': life_pct,
                     'cycles_used': 100 - life_pct,
-                    'sensor_data': last_row,   # ✅ REAL DATA
+                    'sensor_data': df.iloc[-1].to_dict(),
                     'is_demo': True,
                 }
 
+                logs.append({
+                    "engine_id": "DEMO",
+                    "rul": int(rul),
+                    "status": status,
+                    "time": datetime.datetime.now().strftime("%H:%M"),
+                    "date": datetime.datetime.now().strftime("%d %b"),
+                    "result": result_data
+                })
+
+                request.session['result'] = result_data
                 return redirect('dashboard')
 
             except Exception as e:
-                context['error'] = f"Demo error: {str(e)}"
-                return render(request, 'upload.html', context)
+                context['error'] = str(e)
 
-
-        # ================= FILE UPLOAD =================
+        # FILE UPLOAD
         if 'file' in request.FILES:
-            file = request.FILES['file']
-
             try:
-                df = pd.read_csv(file)
+                df = pd.read_csv(request.FILES['file'])
             except Exception as e:
-                context['error'] = f"Could not read CSV: {str(e)}"
+                context['error'] = str(e)
                 return render(request, 'upload.html', context)
 
-            # 🔥 Check required columns
-            missing = [col for col in FEATURE_COLS if col not in df.columns]
+            missing = [c for c in FEATURE_COLS if c not in df.columns]
             if missing:
                 context['error'] = f"Missing columns: {', '.join(missing)}"
                 return render(request, 'upload.html', context)
 
-            try:
-                rul, err = predict_rul(df)
-                if err:
-                    context['error'] = err
-                    return render(request, 'upload.html', context)
-
-                status, status_class, recommendation = get_engine_status(rul)
-                life_pct = get_life_percent(rul)
-
-                # 🔥 LAST ROW = CURRENT ENGINE STATE
-                last_row = df.iloc[-1].to_dict()
-
-                # 🔥 DEBUG (VERY IMPORTANT)
-                print("REAL SENSOR DATA:", last_row)
-
-                request.session['result'] = {
-                    'rul': int(rul),
-                    'status': status,
-                    'status_class': status_class,
-                    'recommendation': recommendation,
-                    'life_pct': life_pct,
-                    'cycles_used': 100 - life_pct,
-                    'sensor_data': last_row,   # ✅ REAL DATA
-                    'is_demo': False,
-                }
-
-                return redirect('dashboard')
-
-            except Exception as e:
-                context['error'] = f"Processing error: {str(e)}"
+            rul, err = predict_rul(df)
+            if err:
+                context['error'] = err
                 return render(request, 'upload.html', context)
+
+            status, status_class, recommendation = get_engine_status(rul)
+            life_pct = get_life_percent(rul)
+
+            result_data = {
+                'rul': int(rul),
+                'status': status,
+                'status_class': status_class,
+                'recommendation': recommendation,
+                'life_pct': life_pct,
+                'cycles_used': 100 - life_pct,
+                'sensor_data': df.iloc[-1].to_dict(),
+                'is_demo': False,
+            }
+
+            logs.append({
+                "engine_id": "REAL",
+                "rul": int(rul),
+                "status": status,
+                "time": datetime.datetime.now().strftime("%H:%M"),
+                "date": datetime.datetime.now().strftime("%d %b"),
+                "result": result_data
+            })
+
+            request.session['result'] = result_data
+            return redirect('dashboard')
 
         context['error'] = 'Please select a CSV file.'
 
@@ -146,19 +153,22 @@ def upload_view(request):
 # 🔹 DASHBOARD
 def dashboard_view(request):
     result = request.session.get('result')
-
     if not result:
         return redirect('upload')
-
-    # 🔥 DEBUG CHECK
-    print("SESSION DATA:", result)
-
     return render(request, 'dashboard.html', result)
 
 
-# 🔹 HOME
-def home(request):
-    return redirect('landing')
+# 🔹 LOGS
+def logs_view(request):
+    return render(request, 'logs.html', {"logs": logs})
+
+
+def view_log(request, index):
+    try:
+        request.session['result'] = logs[index]['result']
+        return redirect('dashboard')
+    except:
+        return redirect('logs')
 
 
 # 🔹 API
@@ -168,16 +178,9 @@ def api_predict(request):
         return JsonResponse({'error': 'POST only'}, status=405)
 
     if 'file' not in request.FILES:
-        return JsonResponse({'error': 'No file uploaded'}, status=400)
+        return JsonResponse({'error': 'No file'}, status=400)
 
-    try:
-        df = pd.read_csv(request.FILES['file'])
-    except Exception as e:
-        return JsonResponse({'error': f'Could not read CSV: {str(e)}'}, status=400)
-
-    missing = [col for col in FEATURE_COLS if col not in df.columns]
-    if missing:
-        return JsonResponse({'error': f'Missing columns: {missing}'}, status=400)
+    df = pd.read_csv(request.FILES['file'])
 
     rul, err = predict_rul(df)
     if err:
@@ -191,44 +194,103 @@ def api_predict(request):
         'recommendation': recommendation,
         'life_percent': get_life_percent(rul),
     })
-    from django.http import HttpResponse
 
+
+# 🔹 DOWNLOAD REPORT
 def download_report(request):
     result = request.session.get('result')
-
     if not result:
-        return HttpResponse("No data available")
+        return HttpResponse("No data")
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="engine_report.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="report.pdf"'
 
     doc = SimpleDocTemplate(response, pagesize=letter)
     styles = getSampleStyleSheet()
 
-    content = []
-
-    # Title
-    content.append(Paragraph("<b>AERO_CORE ENGINE REPORT</b>", styles['Title']))
-    content.append(Spacer(1, 20))
-
-    # Data
-    content.append(Paragraph(f"<b>Status:</b> {result.get('status')}", styles['Normal']))
-    content.append(Spacer(1, 10))
-
-    content.append(Paragraph(f"<b>Remaining Useful Life (RUL):</b> {result.get('rul')} cycles", styles['Normal']))
-    content.append(Spacer(1, 10))
-
-    content.append(Paragraph(f"<b>Life Percentage:</b> {result.get('life_pct')}%", styles['Normal']))
-    content.append(Spacer(1, 10))
-
-    content.append(Paragraph(f"<b>Cycles Used:</b> {result.get('cycles_used')}%", styles['Normal']))
-    content.append(Spacer(1, 10))
-
-    content.append(Paragraph(f"<b>Recommendation:</b> {result.get('recommendation')}", styles['Normal']))
-    content.append(Spacer(1, 20))
-
-    content.append(Paragraph("Generated by AERO_CORE AI System", styles['Italic']))
+    content = [
+        Paragraph("<b>AERO_CORE REPORT</b>", styles['Title']),
+        Spacer(1, 20),
+        Paragraph(f"Status: {result['status']}", styles['Normal']),
+        Paragraph(f"RUL: {result['rul']}", styles['Normal']),
+        Paragraph(f"Life: {result['life_pct']}%", styles['Normal']),
+    ]
 
     doc.build(content)
-
     return response
+
+
+# 🔹 SIGNUP
+def signup_request(request):
+    if request.method == "POST":
+        SignupRequest.objects.create(
+            username=request.POST['username'],
+            email=request.POST['email'],
+            password=request.POST['password']
+        )
+        return render(request, "request_sent.html")
+
+    return render(request, "signup.html")
+
+
+# 🔹 APPROVE
+def approve_user(request, id):
+    req = get_object_or_404(SignupRequest, id=id)
+
+    if User.objects.filter(username=req.username).exists():
+        req.delete()
+        return HttpResponse("User already exists")
+
+    User.objects.create_user(
+        username=req.username,
+        email=req.email,
+        password=req.password
+    )
+
+    send_mail(
+        "AERO_CORE Approved",
+        f"Hello {req.username}, your account is approved.\nLogin: http://127.0.0.1:8000/login/",
+        "channaveer06@gmail.com",
+        [req.email],
+    )
+
+    req.delete()
+
+    return render(request, "approve_success.html", {
+        "username": req.username,
+        "email": req.email
+    })
+
+
+# 🔹 REJECT
+def reject_user(request, id):
+    req = get_object_or_404(SignupRequest, id=id)
+    req.delete()
+    return redirect('admin_panel')
+
+
+# 🔹 DELETE USER
+def delete_user(request, id):
+    user = get_object_or_404(User, id=id)
+
+    if user.is_superuser:
+        return HttpResponse("Cannot delete admin")
+
+    user.delete()
+    return redirect('admin_panel')
+
+
+# 🔒 ADMIN PANEL
+def is_admin(user):
+    return user.is_superuser
+
+
+@user_passes_test(is_admin)
+def admin_panel(request):
+    return render(request, "admin_panel.html", {
+        # 🔥 ONLY PENDING REQUESTS
+        "requests": SignupRequest.objects.filter(is_approved=False),
+
+        # 🔥 ALL USERS
+        "users": User.objects.all()
+    })

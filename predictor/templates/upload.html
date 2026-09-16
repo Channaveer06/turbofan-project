@@ -45,6 +45,14 @@ body {
     box-shadow: 0 0 20px rgba(255,184,116,0.4);
 }
 
+/* Admin button glow */
+.admin-btn {
+    background: linear-gradient(135deg, #ffb874, #ff8a00);
+}
+.admin-btn:hover {
+    box-shadow: 0 0 20px rgba(255,184,116,0.5);
+}
+
 /* Fade */
 .fade {
     animation: fade 0.8s ease;
@@ -52,6 +60,29 @@ body {
 @keyframes fade {
     from {opacity:0; transform:translateY(30px);}
     to {opacity:1; transform:translateY(0);}
+}
+
+/* Cursor */
+body { cursor: none; }
+
+.cursor {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #fb923c;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.cursor-trail {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #fb923c;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
 }
 </style>
 
@@ -61,8 +92,29 @@ body {
 
 <!-- HEADER -->
 <header class="fixed top-0 w-full bg-[#0a0f1c]/80 backdrop-blur-xl flex justify-between items-center px-8 h-20 z-50">
+    
+    <!-- LEFT -->
     <h1 class="text-xl text-[#ffb874] font-bold">AERO_CORE</h1>
-    <a href="{% url 'logout' %}" class="text-sm text-gray-400 hover:text-white">Logout</a>
+
+    <!-- RIGHT -->
+    <div class="flex items-center gap-4">
+
+        <!-- 🔥 CUSTOM ADMIN PANEL BUTTON -->
+        {% if request.user.is_superuser %}
+        <a href="/admin-panel/" 
+           class="admin-btn text-black px-4 py-2 rounded font-semibold flex items-center gap-2 hover:scale-105 transition">
+            <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
+            Admin Panel
+        </a>
+        {% endif %}
+
+        <!-- LOGOUT -->
+        <a href="{% url 'logout' %}" class="text-sm text-gray-400 hover:text-white">
+            Logout
+        </a>
+
+    </div>
+
 </header>
 
 <!-- MAIN -->
@@ -145,6 +197,37 @@ LSTM MODEL • 17 SENSORS • CSV INPUT
 </div>
 
 </main>
+
+<!-- CURSOR -->
+<div class="cursor"></div>
+<div class="cursor-trail"></div>
+
+<script>
+const cursor = document.querySelector(".cursor");
+const trail = document.querySelector(".cursor-trail");
+
+let mouseX = 0, mouseY = 0;
+let trailX = 0, trailY = 0;
+
+document.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    cursor.style.left = mouseX + "px";
+    cursor.style.top = mouseY + "px";
+});
+
+function animate() {
+    trailX += (mouseX - trailX) * 0.1;
+    trailY += (mouseY - trailY) * 0.1;
+
+    trail.style.left = trailX + "px";
+    trail.style.top = trailY + "px";
+
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
 
 </body>
 </html>

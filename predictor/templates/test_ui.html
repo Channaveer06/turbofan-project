@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Aircraft UI Test</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+/* 🎬 VIDEO BACKGROUND */
+#bg-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    z-index: -2;
+}
+
+/* 🌑 DARK OVERLAY (IMPORTANT) */
+.overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: -1;
+}
+
+/* 🚀 CONTENT */
+.content {
+    position: relative;
+    z-index: 1;
+    padding: 50px;
+}
+
+/* 🔥 GLOW CARD */
+.card {
+    background: rgba(0,0,0,0.6);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(0,255,255,0.3);
+    transition: 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 0 40px rgba(0,255,255,0.8);
+    transform: scale(1.05);
+}
+
+/* 🚨 PULSE (ALERT EFFECT) */
+@keyframes pulse {
+    0% { box-shadow: 0 0 10px red; }
+    50% { box-shadow: 0 0 30px red; }
+    100% { box-shadow: 0 0 10px red; }
+}
+
+.alert {
+    animation: pulse 1.5s infinite;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- 🎬 VIDEO -->
+<video autoplay muted loop id="bg-video">
+    <source src="{% static 'videos/plane.mp4' %}" type="video/mp4">
+</video>
+
+<!-- 🌑 OVERLAY -->
+<div class="overlay"></div>
+
+<!-- 🚀 UI CONTENT -->
+<div class="content">
+
+    <h1 style="font-size: 40px; color: cyan;">
+        🚀 AI Aircraft Monitoring System
+    </h1>
+
+    <div class="card">
+        <h2>RUL</h2>
+        <p style="font-size: 30px;

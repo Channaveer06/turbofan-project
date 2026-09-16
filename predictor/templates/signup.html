@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+<style>
+body {
+    background: #0c1324;
+    color: #dce1fb;
+    font-family: Inter;
+}
+
+/* Glass card */
+.glass-card {
+    background: rgba(25, 31, 49, 0.75);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Gradient button */
+.btn-gradient {
+    background: linear-gradient(135deg, #fb923c, #c2410c);
+}
+</style>
+
+</head>
+
+<body class="min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-md p-6">
+
+    <div class="glass-card rounded-xl p-8 shadow-2xl">
+
+        <h2 class="text-3xl font-bold text-center mb-6">Request Access</h2>
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+
+            <input name="username" type="text" placeholder="Username"
+            class="w-full p-3 rounded bg-[#070d1f] border border-gray-700"/>
+
+            <input name="email" type="email" placeholder="Email"
+            class="w-full p-3 rounded bg-[#070d1f] border border-gray-700"/>
+
+            <input name="password" type="password" placeholder="Password"
+            class="w-full p-3 rounded bg-[#070d1f] border border-gray-700"/>
+
+            <button type="submit"
+            class="w-full py-3 rounded font-bold btn-gradient hover:scale-105 transition">
+                Request Access
+            </button>
+        </form>
+
+        <p class="text-center mt-4 text-sm opacity-70">
+            Already have access?
+            <a href="{% url 'login' %}" class="text-orange-400">Login</a>
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>

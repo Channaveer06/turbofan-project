@@ -4,13 +4,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-turbofan-aircraft-engine-predictive-maintenance-key-2024'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
 
 # 🔥 INSTALLED APPS
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -90,6 +91,21 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "AERO_CORE Admin",
+    "site_header": "AERO_CORE",
+    "site_brand": "AERO_CORE",
+    "welcome_sign": "Welcome to AERO_CORE Control Panel",
+    "theme": "darkly",  # 🔥 dark theme
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'channaveer06@gmail.com'
+EMAIL_HOST_PASSWORD = 'abywlwxrkygdcmjo'
 
 
 # 🔥 STATIC FILES

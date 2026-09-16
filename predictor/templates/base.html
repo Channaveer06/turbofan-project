@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<!-- CURSOR CSS -->
+<style>
+body {
+    cursor: none;
+}
+
+/* DOT */
+.cursor {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #fb923c;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* TRAIL */
+.cursor-trail {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #fb923c;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+}
+</style>
+
+{% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<!-- CURSOR -->
+<div class="cursor"></div>
+<div class="cursor-trail"></div>
+
+{% block content %}{% endblock %}
+
+<!-- CURSOR SCRIPT -->
+<script>
+const cursor = document.querySelector(".cursor");
+const trail = document.querySelector(".cursor-trail");
+
+let mouseX = 0, mouseY = 0;
+let trailX = 0, trailY = 0;
+
+document.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    cursor.style.left = mouseX + "px";
+    cursor.style.top = mouseY + "px";
+});
+
+function animate() {
+    trailX += (mouseX - trailX) * 0.1;
+    trailY += (mouseY - trailY) * 0.1;
+
+    trail.style.left = trailX + "px";
+    trail.style.top = trailY + "px";
+
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

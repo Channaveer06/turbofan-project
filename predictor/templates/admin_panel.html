@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AERO_CORE Admin Panel</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+    background: radial-gradient(circle at top, #0a0f1c, #020617);
+    color: white;
+    font-family: Inter;
+}
+
+/* Sidebar */
+.sidebar { background: #0f172a; }
+
+/* Card */
+.card {
+    background: rgba(20,25,40,0.8);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Avatar */
+.avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #ffb874;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* 🔥 PREMIUM POPUP */
+.popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-box {
+    background: rgba(20,25,40,0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 25px;
+    border-radius: 12px;
+    width: 320px;
+    text-align: center;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: 0.3s ease;
+}
+
+.popup.show .popup-box {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 🔥 MODERN TOAST */
+.toast {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: rgba(20,25,40,0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+    from {opacity:0; transform: translateY(10px);}
+    to {opacity:1; transform: translateY(0);}
+}
+</style>
+
+</head>
+
+<body class="flex h-screen">
+
+<!-- SIDEBAR -->
+<div class="w-80 sidebar p-6 flex flex-col justify-between">
+
+    <div>
+        <h1 class="text-xl font-bold text-[#ffb874] mb-6">AERO_CORE</h1>
+
+        <input id="searchUser" placeholder="Search user..."
+               class="w-full mb-4 p-2 rounded bg-[#1e293b]"
+               onkeyup="filterUsers()">
+
+        <div class="flex justify-between mb-2">
+            <p class="text-gray-400 text-sm">USERS</p>
+            <span class="text-xs bg-orange-500 px-2 py-1 rounded">
+                {{ users|length }}
+            </span>
+        </div>
+
+        <div id="userList" class="space-y-3 max-h-[400px] overflow-y-auto">
+
+            {% for user in users %}
+            <div class="user-item flex justify-between bg-[#1e293b] p-2 rounded">
+
+                <div class="flex gap-2 items-center">
+                    <div class="avatar">{{ user.username|first|upper }}</div>
+                    <div>
+                        <p class="text-sm username">{{ user.username }}</p>
+                        <span class="text-xs {% if user.is_superuser %}text-green-400{% else %}text-gray-400{% endif %}">
+                            {% if user.is_superuser %}Admin{% else %}User{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                {% if not user.is_superuser %}
+                <button onclick="confirmDelete({{ user.id }})" class="text-red-400 text-xs">✕</button>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <a href="{% url 'logout' %}" class="text-gray-400">Logout</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-10 overflow-y-auto">
+
+<div class="flex justify-between mb-6">
+    <h1 class="text-3xl text-[#ffb874] font-bold">Access Control Panel</h1>
+    <div class="bg-yellow-500 text-black px-3 py-1 rounded">
+        {{ requests|length }} Pending
+    </div>
+</div>
+
+<div class="space-y-4">
+
+{% for req in requests %}
+<div class="card fade-in p-5 rounded-lg flex justify-between items-center">
+
+    <div class="flex gap-3 items-center">
+        <div class="avatar">{{ req.username|first|upper }}</div>
+        <div>
+            <h2>{{ req.username }}</h2>
+            <p class="text-sm text-gray-400">{{ req.email }}</p>
+        </div>
+    </div>
+
+    <div class="flex gap-3">
+        <button onclick="approveUser({{ req.id }})"
+                class="bg-green-500 px-4 py-2 rounded text-black">Approve</button>
+
+        <a href="/reject/{{ req.id }}/"
+           class="bg-red-500 px-4 py-2 rounded">Reject</a>
+    </div>
+
+</div>
+{% endfor %}
+
+</div>
+</div>
+
+<!-- 🔥 DELETE POPUP -->
+<div id="popup" class="popup">
+    <div class="popup-box">
+        <h2 class="text-lg mb-2">Delete User</h2>
+        <p class="text-gray-400 mb-4">This action cannot be undone.</p>
+
+        <div class="flex justify-center gap-3">
+            <button onclick="deleteUser()" class="bg-red-500 px-4 py-2 rounded">Delete</button>
+            <button onclick="closePopup()" class="bg-gray-600 px-4 py-2 rounded">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🔥 TOAST -->
+<div id="toast" class="toast">
+    <span>✅</span>
+    <span>User deleted successfully</span>
+</div>
+
+<script>
+let deleteId = null;
+
+function confirmDelete(id) {
+    deleteId = id;
+    let popup = document.getElementById("popup");
+    popup.style.display = "flex";
+    setTimeout(() => popup.classList.add("show"), 10);
+}
+
+function closePopup() {
+    let popup = document.getElementById("popup");
+    popup.classList.remove("show");
+    setTimeout(() => popup.style.display = "none", 200);
+}
+
+function deleteUser() {
+    fetch("/delete-user/" + deleteId + "/")
+    .then(() => {
+        closePopup();
+        showToast();
+        setTimeout(() => location.reload(), 1200);
+    });
+}
+
+function showToast() {
+    let t = document.getElementById("toast");
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function approveUser(id) {
+    fetch("/approve/" + id + "/")
+    .then(() => location.reload());
+}
+
+function filterUsers() {
+    let input = document.getElementById("searchUser").value.toLowerCase();
+    document.querySelectorAll(".user-item").forEach(u => {
+        let name = u.querySelector(".username").innerText.toLowerCase();
+        u.style.display = name.includes(input) ? "flex" : "none";
+    });
+}
+</script>
+
+</body>
+</html>

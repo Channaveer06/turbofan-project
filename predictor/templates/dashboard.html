@@ -47,7 +47,7 @@ header {
 /* CARD */
 .card {
     background: rgba(20, 25, 40, 0.55);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(8px);
     border-radius: 16px;
     padding: 25px;
     border: 1px solid rgba(255,255,255,0.08);
@@ -90,11 +90,10 @@ header {
     width: 100%;
     height: 100%;
     object-fit: cover;
-
-    opacity: 0.7;   /* clear visibility */
-
+    opacity: 0.8;
+    filter: brightness(0.9) contrast(1.2) saturate(1.2);
     transform: scale(1.1);
-    animation: slowZoom 5s ease-in-out infinite alternate;
+    animation: slowZoom 6s ease-in-out infinite alternate;
 }
 
 /* 🔥 CINEMATIC OVERLAY */
@@ -105,7 +104,7 @@ header {
 
     background:
         radial-gradient(circle at top, rgba(255,184,116,0.15), transparent 60%),
-        linear-gradient(to bottom, rgba(5,10,20,0.2), rgba(5,10,20,0.6));
+        linear-gradient(to bottom, rgba(5,10,20,0.2), rgba(5, 10, 20, 0.24));
 }
 
 /* 🔥 ANIMATION */
@@ -153,11 +152,89 @@ header {
 .btn-download:hover {
     opacity: 0.85;
 }
+body {
+    cursor: none;
+}
+
+.cursor {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #fb923c;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.cursor-trail {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #fb923c;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+}
+/* 🔥 LOADER FULL SCREEN */
+#loader {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: #0c1324;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    color: #ffb874;
+    font-size: 18px;
+}
+
+/* Spinner */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255,184,116,0.2);
+    border-top: 4px solid #ffb874;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 200px;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+#progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffb874, #ff8a00);
+    transition: width 0.2s;
+}
 </style>
 
 </head>
 
 <body>
+<div id="loader">
+    <div class="spinner"></div>
+
+    <p id="loading-text">Initializing...</p>
+
+    <div class="progress-bar">
+        <div id="progress"></div>
+    </div>
+</div>
 <div class="bg">
     <img src="{% static 'images/default.jpg' %}">
 </div>
@@ -367,6 +444,72 @@ header {
 
 
 </div>
+<div class="cursor"></div>
+<div class="cursor-trail"></div>
+<script>
+const cursor = document.querySelector(".cursor");
+const trail = document.querySelector(".cursor-trail");
 
+let mouseX = 0, mouseY = 0;
+let trailX = 0, trailY = 0;
+
+document.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    cursor.style.left = mouseX + "px";
+    cursor.style.top = mouseY + "px";
+});
+
+function animate() {
+    trailX += (mouseX - trailX) * 0.1;
+    trailY += (mouseY - trailY) * 0.1;
+
+    trail.style.left = trailX + "px";
+    trail.style.top = trailY + "px";
+
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+<script>
+const text = "AI SYSTEM BOOTING...";
+let i = 0;
+
+function typeEffect() {
+    if (i < text.length) {
+        document.getElementById("loading-text").innerHTML += text.charAt(i);
+        i++;
+        setTimeout(typeEffect, 50);
+    }
+}
+typeEffect();
+
+/* Progress Bar */
+let progress = 0;
+const bar = document.getElementById("progress");
+
+function loadProgress() {
+    if (progress < 100) {
+        progress += Math.random() * 10;
+        bar.style.width = progress + "%";
+        setTimeout(loadProgress, 200);
+    }
+}
+loadProgress();
+
+/* Hide Loader */
+window.addEventListener("load", function() {
+    setTimeout(() => {
+        const loader = document.getElementById("loader");
+        loader.style.opacity = "0";
+        loader.style.transition = "0.5s";
+
+        setTimeout(() => {
+            loader.style.display = "none";
+        }, 500);
+    }, 2000);
+});
+</script>
 </body>
 </html>

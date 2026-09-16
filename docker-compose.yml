@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: turbofan_django_app
+    ports:
+      - "8000:8000"
+    volumes:
+      # This maps your local code into the container so you don't have to rebuild the image when you make code changes
+      - .:/app
+    environment:
+      - DEBUG=1

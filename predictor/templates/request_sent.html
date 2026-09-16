@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+<style>
+body {
+    background: radial-gradient(circle at top, #0a0f1c, #020617);
+    color: #e2e8f0;
+    font-family: Inter;
+}
+
+/* Glass card */
+.card {
+    background: rgba(20, 25, 40, 0.75);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Button */
+.btn {
+    background: linear-gradient(135deg, #ffb874, #ff8a00);
+}
+
+/* Fade animation */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Spinner */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255,184,116,0.2);
+    border-top: 4px solid #ffb874;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+</head>
+
+<body class="flex items-center justify-center min-h-screen">
+
+<div class="card p-10 rounded-xl text-center max-w-md fade-in">
+
+    <!-- 🔄 LOADING SPINNER -->
+    <div class="spinner"></div>
+
+    <!-- TITLE -->
+    <h1 class="text-2xl font-bold text-[#ffb874]">
+        Request Submitted
+    </h1>
+
+    <!-- MESSAGE -->
+    <p class="mt-4 text-gray-400">
+        Your access request has been sent successfully.
+    </p>
+
+    <!-- EMAIL NOTE -->
+    <p class="mt-2 text-sm text-gray-500">
+        📧 You will receive an email once your account is approved.
+    </p>
+
+    <!-- BUTTON -->
+    <a href="{% url 'login' %}" 
+       class="inline-block mt-6 px-6 py-3 rounded font-bold text-black btn hover:scale-105 transition">
+        Back to Login
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engine Logs</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+    background: #0b1220;
+    color: white;
+    font-family: 'Inter', sans-serif;
+}
+
+.timeline {
+    position: relative;
+    margin-left: 60px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #374151;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -38px;
+    top: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.anomaly { background: #ef4444; }
+.warning { background: #f59e0b; }
+.healthy { background: #22c55e; }
+
+.card {
+    background: #111827;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+</style>
+
+</head>
+
+<body class="p-8">
+
+<div class="flex justify-between items-center mb-10">
+    <h1 class="text-3xl font-bold text-orange-400">AERO_CORE Logs</h1>
+
+    <a href="{% url 'dashboard' %}" 
+       class="px-4 py-2 border border-orange-400 rounded hover:bg-orange-400 hover:text-black transition">
+       Back
+    </a>
+</div>
+
+<div class="timeline">
+
+{% for item in logs %}
+
+<div class="timeline-item">
+
+    <div class="timeline-dot 
+        {% if item.status == 'Critical' or item.status == 'Anomaly' %} anomaly
+        {% elif item.status == 'Warning' %} warning
+        {% else %} healthy
+        {% endif %}
+    "></div>
+
+    <div class="card">
+
+        <div class="flex justify-between items-center">
+            <h2 class="text-lg font-bold">
+                Engine: {{ item.engine_id }}
+            </h2>
+
+            <span class="text-sm text-gray-400">
+                {{ item.time }} | {{ item.date }}
+            </span>
+        </div>
+
+        <p class="mt-3">RUL: <b>{{ item.rul }}</b></p>
+
+        <p class="mt-1 flex items-center gap-2">
+            Status:
+            <span class="badge
+                {% if item.status == 'Critical' or item.status == 'Anomaly' %} bg-red-500
+                {% elif item.status == 'Warning' %} bg-yellow-500
+                {% else %} bg-green-500
+                {% endif %}
+            ">
+                {{ item.status }}
+            </span>
+        </p>
+
+        <!-- 🔥 UPDATED BUTTON -->
+        <a href="{% url 'view_log' forloop.counter0 %}">
+            <button class="mt-4 px-4 py-2 bg-orange-500 rounded hover:bg-orange-600 transition">
+                Analyze Data
+            </button>
+        </a>
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<p class="text-gray-400">No logs yet</p>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>
