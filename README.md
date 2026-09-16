@@ -28,6 +28,18 @@ turbofan_project/
 
 ---
 
+## 🐳 Run with Docker (Recommended)
+
+If you have Docker installed, you can launch the entire project instantly without installing Python or dependencies.
+
+```bash
+docker-compose up --build
+```
+
+Open your browser at: **http://127.0.0.1:8000**
+
+---
+
 ## ⚙️ Setup & Run
 
 ### 1. Install dependencies
